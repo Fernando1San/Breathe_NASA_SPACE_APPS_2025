@@ -595,6 +595,13 @@ def parse_payload(req):
 
         # Último recurso: devolver el form crudo
         return f, "form-raw", ct, raw
+        # 3) Intento forzado desde el cuerpo crudo (por si viene text/plain)
+    d = try_parse_json(raw)
+    if isinstance(d, dict):
+        return d, "raw-json", ct, raw
+
+    return None, None, ct, raw
+    
 
 
 @app.route("/app/<user>", methods=["POST"])
