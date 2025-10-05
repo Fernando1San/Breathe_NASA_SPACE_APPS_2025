@@ -10,8 +10,7 @@ Signal integrity: proper routing and isolation for analog readings.
 Wireless communication: through the integrated Wi-Fi module of the ESP32.
 Compact form factor: suitable for enclosure integration and prototyping.
 
-![PCB View](![Air_sensor_0](https://github.com/user-attachments/assets/64129429-d9bd-4f72-b910-b99979fbbfbc)
-)
+![PCB View](![Air_sensor_0](https://github.com/user-attachments/assets/64129429-d9bd-4f72-b910-b99979fbbfbc))
 
 ## Main componets
 ESP32-WROOM-32UE: Main processing and communication unit, responsible for reading sensor data and transmitting it wirelessly.
