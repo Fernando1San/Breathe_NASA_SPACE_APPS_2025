@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify
 import math
 import os
 import json
-from threading import Lock
+from threading import Lock, Timer
 
 # =========================
 # CONFIG
@@ -70,16 +70,19 @@ AVOG_N = 6.022e23
 N_AIR_1ATM_298K = 2.5e25  # moléculas/m^3 (aprox)
 
 # Last 72 hours
-end_time   = datetime.now(timezone.utc)
-start_time = end_time - timedelta(days=3)
-
-# strings ISO8601 
-temporal_iso = (
-    start_time.strftime("%Y-%m-%d"),
-    end_time.strftime("%Y-%m-%d"),
-)
-print(temporal_iso)
-
+def update_temporal_iso():
+    global temporal_iso
+    end_time = datetime.now(timezone.utc)
+    start_time = end_time - timedelta(days=3)
+    temporal_iso = (
+        start_time.strftime("%Y-%m-%d"),
+        end_time.strftime("%Y-%m-%d"),
+    )
+    print(f"[INFO] temporal_iso actualizado: {temporal_iso}")
+    # vuelve a ejecutar en 24h
+    Timer(86400, update_temporal_iso).start()
+    
+update_temporal_iso()
 outdir = Path("data")
 outdir.mkdir(exist_ok=True)
 
@@ -549,44 +552,79 @@ def home():
 def saludo(nombre):
     return jsonify({"mensaje": f"Hola {nombre}, bienvenido a Flask!"})
 
-@app.route('/app/<user>', methods=['POST'])
-def app_request(user):
-    
-    data = request.get_json()
-    if not data or "lat" not in data or "lon" not in data or "age" not in data:
-        return jsonify({"error": "Faltan parámetros: age, lat, lon"}), 400
+@app.route("/app/<user>", methods=["POST"])
+def app_user(user):
+    """
+    Endpoint combinado:
+    - Compatible con MIT App Inventor.
+    - Realiza validación robusta.
+    - Ejecuta el análisis de calidad del aire usando tus funciones.
+    """
+    try:
+        data = request.get_json(force=True, silent=True)
+        ct = request.content_type
+        raw = request.data.decode("utf-8", errors="ignore")
+        source = "json"
+    except Exception:
+        return jsonify(ok=False, error="No se pudo leer el cuerpo",
+                       content_type=request.content_type), 400
 
-    age = data["age"]
-    lat = float(data["lat"])
-    lon = float(data["lon"])
-    
-    bbox = point_to_bbox(lat, lon, 50000)
-    obtain_data(bbox, blocks)
+    if not isinstance(data, dict):
+        return jsonify(ok=False, error="Cuerpo no es JSON válido",
+                       raw=raw, content_type=ct), 400
 
-    no2_file = fetch_one("S5P_L2__NO2____HiR_NRT")
-    o3_file  = fetch_one("S5P_L2__O3_TCL_NRT")
-    so2_file = fetch_one("S5P_L2__SO2____HiR_NRT")
-    co_file  = fetch_one("S5P_L2__CO_____HiR_NRT")
+    missing = [k for k in ("latitud", "longitud", "edad", "condicion")
+               if k not in data or str(data[k]).strip() == ""]
+    if missing:
+        return jsonify(ok=False, error="Faltan campos",
+                       missing=missing, received=data,
+                       content_type=ct), 400
 
-    files = {
-        "NO2": no2_file,
-        "O3":  o3_file,
-        "SO2": so2_file,
-        "CO":  co_file,
-    }
-    PBL_METROS = 1000.0  # cámbialo por PBL real cuando integres GEOS-FP/MERRA-2
-    resultado_api = evaluar_calidad_aire(files, bbox=bbox, pbl_m=PBL_METROS)
+    try:
+        lat = float(str(data["latitud"]).replace(",", "."))
+        lon = float(str(data["longitud"]).replace(",", "."))
+        age = int(float(str(data["edad"]).replace(",", ".")))
+        condicion = str(data["condicion"])
+    except Exception as e:
+        return jsonify(ok=False, error="Tipos inválidos",
+                       detail=str(e), received=data), 400
+
+    try:
+        bbox = point_to_bbox(lat, lon, 50000)
+        obtain_data(bbox, blocks)
+
+        no2_file = fetch_one("S5P_L2__NO2____HiR_NRT")
+        o3_file  = fetch_one("S5P_L2__O3_TCL_NRT")
+        so2_file = fetch_one("S5P_L2__SO2____HiR_NRT")
+        co_file  = fetch_one("S5P_L2__CO_____HiR_NRT")
+
+        files = {
+            "NO2": no2_file,
+            "O3":  o3_file,
+            "SO2": so2_file,
+            "CO":  co_file,
+        }
+
+        PBL_METROS = 1000.0
+        resultado_api = evaluar_calidad_aire(files, bbox=bbox, pbl_m=PBL_METROS)
+
+    except Exception as e:
+        return jsonify(ok=False, error="Error interno al procesar datos",
+                       detail=str(e)), 500
+
     respuesta = {
-        "mensaje": f"{user},{age} information",
+        "ok": True,
+        "mensaje": f"Datos recibidos de {user}, edad {age}",
         "ubicacion": {
-            "lat": lat,
-            "lon": lon,
-            "age": age,
+            "latitud": lat,
+            "longitud": lon,
+            "edad": age,
+            "condicion": condicion,
         },
         "resultados": resultado_api
     }
 
-    return jsonify(respuesta)
+    return jsonify(respuesta), 201
 
 @app.route('/cookie_hardware/<ID>', methods=['POST'])
 def get_hardware_data(ID):
