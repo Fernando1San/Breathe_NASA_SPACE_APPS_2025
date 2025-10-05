@@ -681,8 +681,8 @@ def parse_payload(req):
     if "application/x-www-form-urlencoded" in ct:
         f = request.form.to_dict()
 
-        # 2.a) Pares campo=valor
-        if all(k in f for k in ("latitud", "longitud", "edad", "condicion")):
+        # 2.a) Pares campo=valor (incluyendo nombre)
+        if all(k in f for k in ("nombre", "latitud", "longitud", "edad", "condicion")):
             return f, "form-fields", ct, raw
 
         # 2.b) Form con UNA clave que en realidad es un JSON (casos MIT AI)
@@ -712,13 +712,26 @@ def parse_payload(req):
 
     return None, None, ct, raw
 
-@app.route("/app/<user>", methods=["POST"])
-def app_user(user):
+def _nan_to_none(obj):
+    """Convierte NaN/inf a None recursivamente para JSON válido."""
+    if isinstance(obj, dict):
+        return {k: _nan_to_none(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_nan_to_none(v) for v in obj]
+    if isinstance(obj, float):
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        return obj
+    return obj
+
+
+@app.route("/app/user", methods=["POST"])
+def app_user():
     """
     Endpoint combinado:
     - Compatible con MIT App Inventor.
-    - Realiza validación robusta.
-    - Ejecuta el análisis de calidad del aire usando tus funciones.
+    - Requiere 'nombre' en el payload.
+    - Devuelve SOLO 'resultados' con los índices calculados.
     """
     data, source, ct, raw = parse_payload(request)
 
@@ -726,8 +739,8 @@ def app_user(user):
         return jsonify(ok=False, error="No pude leer el cuerpo",
                        content_type=ct, raw=raw), 400
 
-    # Validación mínima
-    missing = [k for k in ("latitud", "longitud", "edad", "condicion")
+    # Validación mínima (incluye 'nombre')
+    missing = [k for k in ("nombre", "latitud", "longitud", "edad", "condicion")
                if k not in data or str(data[k]).strip() == ""]
     if missing:
         return jsonify(ok=False, error="Faltan campos",
@@ -736,6 +749,7 @@ def app_user(user):
 
     # Normaliza tipos / coma decimal
     try:
+        nombre = str(data["nombre"]).strip()
         lat = float(str(data["latitud"]).replace(",", "."))
         lon = float(str(data["longitud"]).replace(",", "."))
         age = int(float(str(data["edad"]).replace(",", ".")))
@@ -744,20 +758,28 @@ def app_user(user):
         return jsonify(ok=False, error="Tipos inválidos",
                        detail=str(e), received=data), 400
 
-    # --- NUEVO: actualiza el BBOX global en cada llamada ---
-    # Permite opcionalmente pasar "radio_m" en el payload (default 10 km)
+    # radio opcional (m)
     try:
         radio_m = float(str(data.get("radio_m", "10000")).replace(",", "."))
     except Exception:
         radio_m = 10000.0
 
+    # bbox centrado en el punto
     bbox_local = point_to_bbox(lat, lon, radio_m)
 
-    global BBOX
-    with BBOX_LOCK:
-        BBOX = bbox_local  # <- queda disponible para cualquier otra función que use el BBOX global
+    # (opcional) actualizar un BBOX global si lo usas en otras partes
+    try:
+        global BBOX
+    except NameError:
+        pass
+    else:
+        try:
+            BBOX_LOCK.acquire()
+            BBOX = bbox_local
+        finally:
+            BBOX_LOCK.release()
 
-    # Si prefieres seguir pasando bbox explícito a tus funciones, usa bbox_local:
+    # Descarga/selección de archivos recientes
     try:
         obtain_data(bbox_local, blocks)
 
@@ -770,25 +792,36 @@ def app_user(user):
     except Exception as e:
         return jsonify(ok=False, error="Error preparando datos satelitales", detail=str(e)), 500
 
+    # Sensores cercanos → promedios
     sensor_avgs, sensores_cercanos = compute_nearby_sensor_avgs(lat, lon, radio_km=50.0)
 
+    # Evaluación final (fusión)
     try:
         PBL_METROS = 1000.0
-        resultado_api = evaluar_calidad_aire(files, bbox=bbox_local, pbl_m=PBL_METROS, sensor_avgs=sensor_avgs)
+        resultado_api = evaluar_calidad_aire(
+            files, bbox=bbox_local, pbl_m=PBL_METROS, sensor_avgs=sensor_avgs
+        )
+        # (opcional) enriquecer internamente; no se enviará en la respuesta final
         resultado_api.setdefault("sensor_merge", {})
         resultado_api["sensor_merge"]["sensores_cercanos"] = sensores_cercanos
         resultado_api["sensor_merge"]["radio_km"] = 50.0
-        resultado_api["bbox_usado"] = bbox_local  # útil para depurar
+        resultado_api["bbox_usado"] = bbox_local
     except Exception as e:
         return jsonify(ok=False, error="Error en evaluación de calidad del aire", detail=str(e)), 500
 
-    return jsonify({
-        "ok": True,
-        "mensaje": f"Datos recibidos de {user}, edad {age}",
-        "ubicacion": {"latitud": lat, "longitud": lon, "edad": age, "condicion": condicion},
-        "bbox": BBOX,  # muestra el BBOX global ya actualizado
-        "resultados": resultado_api
-    }), 201
+    # Solo el bloque 'resultados' y con NaN saneado
+    resultados_puros = {
+        "aqi_index": resultado_api.get("aqi_index"),
+        "aqi_label_es": resultado_api.get("aqi_label_es"),
+        "dust_index": resultado_api.get("dust_index"),
+        "exercise_index": resultado_api.get("exercise_index"),
+        "gases_ppb": resultado_api.get("gases_ppb", {}),
+        "health_risk_index": resultado_api.get("health_risk_index"),
+    }
+    resultados_puros = _nan_to_none(resultados_puros)
+
+    return jsonify({"resultados": resultados_puros}), 201
+
 
 @app.route('/cookie_hardware/<ID>', methods=['POST'])
 def get_hardware_data(ID):
@@ -831,5 +864,4 @@ def healthz():
     return "ok", 200
 
 if __name__ == '__main__':
-    # Úsalo localmente. En producción se recomienda Gunicorn: `gunicorn app:app`
     app.run(debug=True)
