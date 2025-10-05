@@ -1,3 +1,4 @@
 PythonAPI/data/
 *.nc
 .env
+.netrc

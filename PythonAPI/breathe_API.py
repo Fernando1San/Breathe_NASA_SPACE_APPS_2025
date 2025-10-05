@@ -70,11 +70,15 @@ AVOG_N = 6.022e23
 N_AIR_1ATM_298K = 2.5e25  # moléculas/m^3 (aprox)
 
 # Last 72 hours
-end_time   = datetime.now(timezone.utc)              # aware, in UTC
+end_time   = datetime.now(timezone.utc)
 start_time = end_time - timedelta(days=3)
 
-temporal_iso = (start_time, end_time) 
-print("temporal_iso:", temporal_iso)
+# strings ISO8601 
+temporal_iso = (
+    start_time.strftime("%Y-%m-%d"),
+    end_time.strftime("%Y-%m-%d"),
+)
+print(temporal_iso)
 
 outdir = Path("data")
 outdir.mkdir(exist_ok=True)
@@ -125,7 +129,7 @@ blocks = {
 # =========================
 # AUTENTICATION
 # =========================
-ea.login(strategy="environment")
+ea.login(strategy="netrc", persist=True)
 
 # =========================
 # HELPERS
@@ -646,6 +650,33 @@ def user():
         if k not in data:
             return jsonify(error=f"Falta '{k}'"), 400
     return jsonify(ok=True), 201
+
+@app.route("/debug/env")
+def debug_env():
+    # Verificar variables de entorno
+    env_user = bool(os.getenv("EARTHDATA_USERNAME"))
+    env_pass = bool(os.getenv("EARTHDATA_PASSWORD"))
+
+    # Verificar archivo .netrc
+    netrc_path = Path.home() / ".netrc"
+    netrc_user = False
+    netrc_pass = False
+
+    if netrc_path.exists():
+        try:
+            with open(netrc_path, "r", encoding="utf-8") as f:
+                data = f.read()
+                netrc_user = "login" in data
+                netrc_pass = "password" in data
+        except Exception:
+            pass
+
+    return {
+        "env_user_present": env_user,
+        "env_pass_present": env_pass,
+        "netrc_user_present": netrc_user,
+        "netrc_pass_present": netrc_pass,
+    }, 200
 
 
 if __name__ == '__main__':
