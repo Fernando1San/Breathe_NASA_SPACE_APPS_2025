@@ -4,15 +4,67 @@ from datetime import datetime, timedelta, timezone
 import xarray as xr
 import numpy as np
 from flask import Flask, request, jsonify
-import requests
+import math
+import os
+import json
+from threading import Lock
 
 # =========================
 # CONFIG
 # =========================
+#Hardware simple DB
+HARDWARE_TABLE = {
+    "001": {"lat": 19.4326, "lon": -99.1332},   # CDMX
+    "002": {"lat": 20.6736, "lon": -103.3440},  # Guadalajara
+    "003": {"lat": 25.6866, "lon": -100.3161},  # Monterrey
+    "004": {"lat": 19.5296, "lon": -96.9236},   # Xalapa
+}
+STORE_PATH = "/tmp/hardware_store.json"
+STORE_LOCK = Lock()
+SENSOR_STORE = {}
+def load_from_disk():
+    if os.path.exists(STORE_PATH):
+        try:
+            with open(STORE_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    HARDWARE_TABLE.update(data)
+        except Exception:
+            pass  # si falla, seguimos con el diccionario en memoria
+
+def save_to_disk():
+    try:
+        with open(STORE_PATH, "w", encoding="utf-8") as f:
+            json.dump(HARDWARE_TABLE, f, ensure_ascii=False)
+    except Exception:
+        pass
+def _load_store():
+    if os.path.exists(STORE_PATH):
+        try:
+            with open(STORE_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    SENSOR_STORE.update(data)
+        except Exception:
+            pass
+
+def _save_store():
+    try:
+        with open(STORE_PATH, "w", encoding="utf-8") as f:
+            json.dump(SENSOR_STORE, f, ensure_ascii=False)
+    except Exception:
+        pass
+
+_load_store()
+# inicial load (hardware table)
+load_from_disk()
+
+
+
 # Bounding box: (min_lon, min_lat, max_lon, max_lat)
-#bbox = (-96.999273, 19.455968, -96.822608, 19.622459) #Xalapa
+bbox = (-96.999273, 19.455968, -96.822608, 19.622459) #Xalapa
 #bbox = (-5.22, 41.595021, -5.20, 41.696425) # Valladolid, España
-bbox = (-74.122824, 40.645596, -73.848943, 40.853080)  # Nueva York, EE.UU.
+#bbox = (-74.122824, 40.645596, -73.848943, 40.853080)  # Nueva York, EE.UU.
 
 AVOG_N = 6.022e23
 N_AIR_1ATM_298K = 2.5e25  # moléculas/m^3 (aprox)
@@ -76,6 +128,25 @@ ea.login(strategy="environment")
 # =========================
 # HELPERS
 # =========================
+def point_to_bbox(lat_deg, lon_deg, radius_m):
+    """
+    Convierte un punto (lat, lon) y un radio (m) a un bounding box
+    en formato [min_lon, min_lat, max_lon, max_lat].
+    """
+    # Aproximaciones (válidas para radios <50 km)
+    lat_per_m = 1.0 / 111_320.0
+    lon_per_m = 1.0 / (111_320.0 * math.cos(math.radians(lat_deg)))
+
+    dlat = radius_m * lat_per_m
+    dlon = radius_m * lon_per_m
+
+    min_lat = lat_deg - dlat
+    max_lat = lat_deg + dlat
+    min_lon = lon_deg - dlon
+    max_lon = lon_deg + dlon
+
+    return [min_lon, min_lat, max_lon, max_lat]
+
 def fetch_one(short_name: str):
     """Serch and download 1. Return route or None."""
     try:
@@ -472,13 +543,18 @@ def home():
 def saludo(nombre):
     return jsonify({"mensaje": f"Hola {nombre}, bienvenido a Flask!"})
 
-@app.route('/app/user', methods = ['POST'])
-def recibir_saludo():
-    saludo = request.get_json()
-    return jsonify({"metodo": "POST", "recibido": saludo})
+@app.route('/app/<user>', methods=['POST'])
+def app_request(user):
+    
+    data = request.get_json()
+    if not data or "lat" not in data or "lon" not in data or "user" not in data:
+        return jsonify({"error": "Faltan parámetros: user, lat, lon"}), 400
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    age = data["age"]
+    lat = float(data["lat"])
+    lon = float(data["lon"])
+    
+    bbox = point_to_bbox(lat, lon, 50000)
     obtain_data(bbox, blocks)
 
     no2_file = fetch_one("S5P_L2__NO2____HiR_NRT")
@@ -494,6 +570,84 @@ if __name__ == '__main__':
     }
     PBL_METROS = 1000.0  # cámbialo por PBL real cuando integres GEOS-FP/MERRA-2
     resultado_api = evaluar_calidad_aire(files, bbox=bbox, pbl_m=PBL_METROS)
+    respuesta = {
+        "mensaje": f"{user},{age} information",
+        "ubicacion": {
+            "lat": lat,
+            "lon": lon,
+            "radio_m": 50000
+        },
+        "resultados": resultado_api
+    }
+
+    return jsonify(respuesta)
+
+@app.route('/cookie_hardware/<ID>', methods=['POST'])
+def get_hardware_data(ID):
+    data = request.get_json(silent=True)
+
+    # Validar que se haya enviado JSON
+    if not data:
+        return jsonify({"error": "no_json_received"}), 400
+
+    # Validar sensores esperados
+    expected_keys = {"PMS5003", "MQ131", "MQ4"}
+    missing = expected_keys - data.keys()
+
+    if missing:
+        return jsonify({
+            "err": "missing_fields",
+            "missing": list(missing),
+        }), 400
+
+    # Buscar ID de hardware
+    coords = HARDWARE_TABLE.get(ID)
+    if not coords:
+        return jsonify({"err": "hardware_id_not_found", "id": ID}), 404
+    
+    record = {
+        "coords": coords,
+        "sensors": {
+            "PMS5003": data["PMS5003"],
+            "MQ131":   data["MQ131"],
+            "MQ4":     data["MQ4"],
+        },
+        "received_at": datetime.now(timezone.utc).isoformat()
+    }
+    with STORE_LOCK:
+        SENSOR_STORE[ID] = record
+        _save_store()
+    # Estructurar la respuesta
+    #response = {
+    #    "hardware_id": ID,
+    #    "ubicacion": coords,
+    #    "lecturas_recibidas": {
+    #        "sensor1": data["sensor1"],
+    #        "sensor2": data["sensor2"],
+    #        "sensor3": data["sensor3"]
+    #    },
+    #    "estado": "OK",
+    #    "mensaje": f"Datos de {ID} recibidos correctamente."
+    #}
+
+    return jsonify({"status": "ok"}), 200
+    
+    
+@app.route("/app/user", methods=["POST"])
+def user():
+    if not request.is_json:
+        return jsonify(error="Expected application/json",
+                       got=request.headers.get("Content-Type")), 415
+    data = request.get_json()
+    # valida campos
+    for k in ("latitud","longitud","edad","condicion"):
+        if k not in data:
+            return jsonify(error=f"Falta '{k}'"), 400
+    return jsonify(ok=True), 201
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
     
     
     
