@@ -1,4 +1,6 @@
 PythonAPI/data/
+PythonAPI/test_endpoints.py
+PythonAPI/test_NASA_satelites.py
 *.nc
 .env
 .netrc
