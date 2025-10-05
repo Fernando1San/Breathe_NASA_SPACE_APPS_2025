@@ -25,5 +25,5 @@ Programming and debugging header: Allows firmware upload and serial monitoring.
 Status indicators: LEDs for power and Wi-Fi connection status.
 
 ## Connectivity and Power
-The PCB is powered via a standard 9V ot 12V input, with onboard regulation to 3.3V for the ESP32 and 5V for the Sensors.
+The PCB is powered via a standard conector for 9V or 12V input, with onboard regulation to 3.3V for the ESP32 and 5V for the Sensors.
 All communication with external systems occurs through Wi-Fi, using the ESP32’s internal antenna and u.FL connector for external antennas when longer range is required.
