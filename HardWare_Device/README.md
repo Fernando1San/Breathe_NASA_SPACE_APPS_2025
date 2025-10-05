@@ -1,4 +1,4 @@
-# Hardware 
+# Hardware, Name: Breathe_Node
 ## Overview
 To complement the main mobile application—which displays real-time air quality information from an online server—this hardware prototype was developed to directly measure environmental data and provide more accurate and localized readings for the system.
 
