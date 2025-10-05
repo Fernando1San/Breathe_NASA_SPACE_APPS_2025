@@ -552,6 +552,51 @@ def home():
 def saludo(nombre):
     return jsonify({"mensaje": f"Hola {nombre}, bienvenido a Flask!"})
 
+def try_parse_json(s: str):
+    try:
+        return json.loads(s)
+    except Exception:
+        return None
+
+def parse_payload(req):
+    ct = (req.headers.get("Content-Type") or "").lower()
+    raw = req.get_data(as_text=True)
+
+    # 1) JSON normal
+    if "application/json" in ct:
+        data = request.get_json(silent=True)
+        if isinstance(data, dict):
+            return data, "json", ct, raw
+
+    # 2) FORM ─ varias estrategias
+    if "application/x-www-form-urlencoded" in ct:
+        f = request.form.to_dict()
+
+        # 2.a) Pares campo=valor
+        if all(k in f for k in ("latitud", "longitud", "edad", "condicion")):
+            return f, "form-fields", ct, raw
+
+        # 2.b) Form con UNA clave que en realidad es un JSON (tu caso)
+        if len(f) == 1:
+            only_key, only_val = next(iter(f.items()))
+            d = try_parse_json(only_key)
+            if isinstance(d, dict):
+                return d, "form-key-json", ct, raw
+            d = try_parse_json(only_val)
+            if isinstance(d, dict):
+                return d, "form-value-json", ct, raw  # ← SIN paréntesis extra
+
+        # 2.c) payload=data con JSON dentro
+        for k in ("payload", "data"):
+            if k in f:
+                d = try_parse_json(f[k])
+                if isinstance(d, dict):
+                    return d, "form-payload-json", ct, raw
+
+        # Último recurso: devolver el form crudo
+        return f, "form-raw", ct, raw
+
+
 @app.route("/app/<user>", methods=["POST"])
 def app_user(user):
     """
@@ -560,26 +605,21 @@ def app_user(user):
     - Realiza validación robusta.
     - Ejecuta el análisis de calidad del aire usando tus funciones.
     """
-    try:
-        data = request.get_json(force=True, silent=True)
-        ct = request.content_type
-        raw = request.data.decode("utf-8", errors="ignore")
-        source = "json"
-    except Exception:
-        return jsonify(ok=False, error="No se pudo leer el cuerpo",
-                       content_type=request.content_type), 400
+    data, source, ct, raw = parse_payload(request)
 
     if not isinstance(data, dict):
-        return jsonify(ok=False, error="Cuerpo no es JSON válido",
-                       raw=raw, content_type=ct), 400
+        return jsonify(ok=False, error="No pude leer el cuerpo",
+                       content_type=ct, raw=raw), 400
 
+    # Validación mínima
     missing = [k for k in ("latitud", "longitud", "edad", "condicion")
                if k not in data or str(data[k]).strip() == ""]
     if missing:
         return jsonify(ok=False, error="Faltan campos",
-                       missing=missing, received=data,
+                       missing=missing, received=data, source=source,
                        content_type=ct), 400
 
+    # Normaliza tipos / coma decimal
     try:
         lat = float(str(data["latitud"]).replace(",", "."))
         lon = float(str(data["longitud"]).replace(",", "."))
@@ -587,7 +627,8 @@ def app_user(user):
         condicion = str(data["condicion"])
     except Exception as e:
         return jsonify(ok=False, error="Tipos inválidos",
-                       detail=str(e), received=data), 400
+                       detail=str(e), received=data, source=source,
+                       content_type=ct), 400
 
     try:
         bbox = point_to_bbox(lat, lon, 50000)
@@ -611,7 +652,7 @@ def app_user(user):
     except Exception as e:
         return jsonify(ok=False, error="Error interno al procesar datos",
                        detail=str(e)), 500
-
+ 
     respuesta = {
         "ok": True,
         "mensaje": f"Datos recibidos de {user}, edad {age}",
