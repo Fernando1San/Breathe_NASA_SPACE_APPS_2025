@@ -70,14 +70,11 @@ AVOG_N = 6.022e23
 N_AIR_1ATM_298K = 2.5e25  # moléculas/m^3 (aprox)
 
 # Last 72 hours
-def iso_utc_z(dt: datetime) -> str:
-    # fuerza UTC y devuelve 'YYYY-MM-DDTHH:MM:SSZ'
-    return dt.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-
-end_time   = datetime.now(timezone.utc)
+end_time   = datetime.now(timezone.utc)              # aware, in UTC
 start_time = end_time - timedelta(days=3)
 
-temporal_iso = (iso_utc_z(start_time), iso_utc_z(end_time))
+temporal_iso = (start_time, end_time) 
+print("temporal_iso:", temporal_iso)
 
 outdir = Path("data")
 outdir.mkdir(exist_ok=True)
