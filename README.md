@@ -19,4 +19,4 @@ https://youtube.com/shorts/2b4xFa8w2Ws?feature=share
 https://s0ma9dp.github.io/BREATHE/
 
 ## Repo Navigation suggestions
-
+Throughout the folders, you’ll find README files that explain each section and its code.
