@@ -547,8 +547,8 @@ def saludo(nombre):
 def app_request(user):
     
     data = request.get_json()
-    if not data or "lat" not in data or "lon" not in data or "user" not in data:
-        return jsonify({"error": "Faltan parámetros: user, lat, lon"}), 400
+    if not data or "lat" not in data or "lon" not in data or "age" not in data:
+        return jsonify({"error": "Faltan parámetros: age, lat, lon"}), 400
 
     age = data["age"]
     lat = float(data["lat"])
@@ -575,7 +575,7 @@ def app_request(user):
         "ubicacion": {
             "lat": lat,
             "lon": lon,
-            "radio_m": 50000
+            "age": age,
         },
         "resultados": resultado_api
     }
@@ -647,7 +647,7 @@ def user():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
     
     
     
