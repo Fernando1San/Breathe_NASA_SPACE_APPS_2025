@@ -1,5 +1,5 @@
 # Electronic Board
-##Design Overview
+## Design Overview
 The Air Quality Monitoring PCB is a custom-designed electronic board built around the ESP32-WROOM-32UE microcontroller.
 It serves as a compact and efficient hardware platform for collecting and transmitting environmental data over Wi-Fi.
 The PCB integrates multiple sensor interfaces and power management components to ensure stable operation and accurate measurements.
@@ -10,7 +10,7 @@ Signal integrity: proper routing and isolation for analog readings.
 Wireless communication: through the integrated Wi-Fi module of the ESP32.
 Compact form factor: suitable for enclosure integration and prototyping.
 
-##Main componets
+## Main componets
 ESP32-WROOM-32UE: Main processing and communication unit, responsible for reading sensor data and transmitting it wirelessly.
 
 Sensor sockets:
