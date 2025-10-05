@@ -1,0 +1,18 @@
+# --- Web framework ---
+Flask==3.0.3
+
+# --- NASA Earthdata API access ---
+earthaccess==0.8.1
+
+# --- Scientific computing ---
+numpy==1.26.4
+xarray==2024.2.0
+netCDF4==1.6.5
+h5netcdf==1.3.0
+
+# --- Utilities ---
+requests==2.32.3
+pathlib==1.0.1
+
+# --- Optional (for concurrency/thread locks, included in stdlib but safe to list) ---
+# threading (builtin, no need to install)
