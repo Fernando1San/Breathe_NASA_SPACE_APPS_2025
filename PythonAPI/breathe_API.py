@@ -14,10 +14,21 @@ from threading import Lock, Timer
 # =========================
 # Hardware simple DB
 HARDWARE_TABLE = {
-    "001": {"lat": 19.4326, "lon": -99.1332},   # CDMX
-    "002": {"lat": 20.6736, "lon": -103.3440},  # Guadalajara
-    "003": {"lat": 25.6866, "lon": -100.3161},  # Monterrey
-    "004": {"lat": 19.5296, "lon": -96.9236},   # Xalapa
+    "001": {"lat": 19.4326, "lon": -99.1332},   # CDMX_Zocalo
+    "002": {"lat": 19.4363, "lon": -99.0719},   # CDMX_Int.Airport
+    "003": {"lat": 19.4204, "lon": -99.1819},   # CDMX_Chapultepec Castle
+    "004": {"lat": 40.4169, "lon": -3.7038},    # Madrid_Puerta del Sol
+    "005": {"lat": 31.8591, "lon": -116.6243},  # Ensenada_Downtown
+    "006": {"lat": 19.5296, "lon": -96.9236},   # Xalapa
+    "007": {"lat": 40.7580, "lon": -73.9855},   # NYC_TimesSquare
+    "008": {"lat": 51.5079, "lon": -0.1283},    # London_TrafalgarSq
+    "009": {"lat": 48.8584, "lon": 2.2945},     # Paris_EiffelTower
+    "010": {"lat": 35.6595, "lon": 139.7005},   # Tokyo_ShibuyaCrossing
+    "011": {"lat": -33.8568, "lon": 151.2153},  # Sydney_OperaHouse
+    "012": {"lat": 30.0444, "lon": 31.2357},    # Cairo_TahrirSquare
+    "013": {"lat": -23.5614, "lon": -46.6566},  # SaoPaulo_PaulistaAve
+    "014": {"lat": -1.2864, "lon": 36.8172},    # Nairobi_CBD
+    "015": {"lat": 43.6426, "lon": -79.3871},   # Toronto_CNTower
 }
 STORE_PATH = "/tmp/hardware_store.json"
 STORE_LOCK = Lock()
@@ -739,7 +750,7 @@ def app_user():
         return jsonify(ok=False, error="No pude leer el cuerpo",
                        content_type=ct, raw=raw), 400
 
-    # Validación mínima (incluye 'nombre')
+    # Validación mínima
     missing = [k for k in ("nombre", "latitud", "longitud", "edad", "condicion")
                if k not in data or str(data[k]).strip() == ""]
     if missing:
