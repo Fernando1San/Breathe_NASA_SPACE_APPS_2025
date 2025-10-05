@@ -1,0 +1,3 @@
+PythonAPI/data/
+*.nc
+.env
