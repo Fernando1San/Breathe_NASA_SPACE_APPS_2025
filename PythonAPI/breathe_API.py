@@ -463,7 +463,7 @@ def evaluar_calidad_aire(files, bbox, pbl_m=1000.0):
     """
 
     # 1) AQI con tus funciones
-    res = aqi_simple_from_files(files, bbox=bbox, pbl_m=pbl_m)
+    res = aqi_simple_from_files(files, bbox=bbox, pbl_m=pbl_m
     worst = res.get("AQ_simple_nivel", None)  # 0/1/2 o None
     if worst is None:
         aqi_index = None
@@ -721,21 +721,8 @@ def get_hardware_data(ID):
     #    "estado": "OK",
     #    "mensaje": f"Datos de {ID} recibidos correctamente."
     #}
-
+    print(record)
     return jsonify({"status": "ok"}), 200
-    
-    
-@app.route("/app/user", methods=["POST"])
-def user():
-    if not request.is_json:
-        return jsonify(error="Expected application/json",
-                       got=request.headers.get("Content-Type")), 415
-    data = request.get_json()
-    # valida campos
-    for k in ("latitud","longitud","edad","condicion"):
-        if k not in data:
-            return jsonify(error=f"Falta '{k}'"), 400
-    return jsonify(ok=True), 201
 
 @app.route("/debug/env")
 def debug_env():
@@ -756,7 +743,6 @@ def debug_env():
                 netrc_pass = "password" in data
         except Exception:
             pass
-
     return {
         "env_user_present": env_user,
         "env_pass_present": env_pass,
