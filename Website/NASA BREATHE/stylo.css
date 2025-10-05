@@ -1,0 +1,166 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root { --nav-offset: 88px; }     /* ~ navbar height */
+html { scroll-behavior: smooth; scroll-padding-top: var(--nav-offset); }
+body {
+  background: #000;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+  position: fixed;
+  inset: 0 0 auto 0;              /* top:0; left:0; right:0 */
+  z-index: 1000;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;    /* align content to the left */
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #ff7200;            /* orange bar */
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+/* Group: arrow + BACK act as one link (preferred HTML: <a class="backlink">…</a>) */
+.icon { display: flex; align-items: center; }
+.backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;                    /* tight space between arrow and text */
+  text-decoration: none;
+  color: #fff;                    /* base color */
+}
+.back-icon {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;           /* arrow follows text color */
+  fill: none;
+}
+.logo {
+  margin: 0;
+  padding: 0;
+  color: inherit;                 /* follow parent link color */
+  font-size: clamp(1.25rem, 2vw + 0.25rem, 1.75rem);
+  line-height: 1;
+}
+
+/* Hover/focus together (arrow + text) */
+.backlink:hover,
+.backlink:focus-visible { color: #000; }
+
+/* --- Fallback if you DIDN'T wrap them in one link ---
+   This still syncs the hover color for separate <svg> + <a> */
+.icon > svg,
+.icon > .logo a { color: inherit; }
+.icon:hover > .logo a { color: #000; }
+.icon:hover > svg { color: #000; }
+
+/* ---------- Buy Page Layout ---------- */
+/* Two-column: left = title (and its image), right = image + SOLD OUT badge */
+.buy {
+  width: min(92%, 1200px);
+  margin: calc(var(--nav-offset) + 12px) auto 0;  /* keep content clear of fixed navbar */
+  display: grid;
+  grid-template-columns: 1fr min(38%, 420px);     /* left | right */
+  grid-auto-rows: auto;
+  column-gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+  padding-top: clamp(1rem, 3vh, 2rem);
+}
+
+/* Left column: title */
+.buyintro { grid-column: 1; grid-row: 1 / span 2; }
+.buyintro h1 {
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.1;
+  text-align: left;
+  margin: 0 0 clamp(0.75rem, 2vw, 1rem) 0;
+}
+
+/* Right column, row 1: product image */
+.product-img {
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+
+.buysec{
+  transform: translateY(140px);
+}
+
+/* Right column, row 2: SOLD OUT badge (fake-click) */
+.sold-flag {
+  grid-column: 2;
+  grid-row: 2;
+  background: #ce7202c4;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  cursor: pointer;               /* hand cursor */
+  user-select: none;
+}
+.sold-flag span {
+  background: transparent;
+  color: #d3d3d3c9;                   /* readable on orange */
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+}
+/* Visual-only hover feedback */
+.sold-flag:hover { filter: brightness(0.95); transform: translateY(-1px); }
+
+/* Ensure inner elements inside orange badge stay transparent (safety) */
+.sold-flag * { background: transparent !important; }
+/* Mobile: stack vertically with badge on top-right feel */
+@media (max-width: 768px){
+  .buy{
+    grid-template-columns: 1fr;
+    grid-template-areas: "hero" "sold";
+    row-gap: clamp(1rem, 3vw, 2rem);
+    justify-items: center;          /* center children horizontally */
+  }
+
+  .buyintro{ 
+    grid-area: hero; 
+    width: 100%;
+    text-align: center;             /* center the H1 */
+  }
+
+  .buyintro h1{
+    margin-left: 0;                 /* override desktop offset */
+    margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  }
+
+  .buysec{
+    transform: translateY(-10px);
+  }
+
+  .product-img{
+    width: min(92%, 720px);         /* large, centered image */
+    max-width: none;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .sold-flag{
+    grid-area: sold;
+    justify-self: center;           /* center the orange card */
+    position: static;               /* no sticky on tablet */
+    margin-top: 0;
+    min-width: min(80%, 360px);
+    text-align: center;
+  }
+}

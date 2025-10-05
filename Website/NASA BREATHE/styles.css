@@ -1,0 +1,604 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Sección principal con background */
+.main{
+  width: 100%;
+  min-height: 100vh; /* más robusto que 109vh */
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.5) 50%), url(air.jpg) center / cover no-repeat;
+  padding-top: 1px;
+}
+
+/* Navbar responsive con Flex */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.4); /* Rectángulo translúcido */
+  border-radius: 12px;            /* Bordes suaves opcionales */
+  backdrop-filter: blur(5px);     /* Efecto vidrio difuminado */
+}
+
+:root { --nav-offset: 88px; }   /* ≈ your navbar height */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-offset);
+}
+
+.icon{
+  width: auto;
+  height: auto;
+}
+
+.logo{
+  color: #ff7200; 
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.5rem, 2.2vw + 0.5rem, 2.25rem);
+  padding-left: 1rem;
+  line-height: 1.1;
+}
+
+/* Menú */
+.menu{
+  width: auto;                 /* deja que el contenido defina */
+}
+
+.navbar ul{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 4vw, 3rem); /* reemplaza margin-left en li */
+}
+
+/* Ítems del menú */
+ul li{
+  /* márgenes ahora vienen de gap */
+  font-size: 1rem; /* base; se ajusta con el de <a> */
+}
+
+/* Enlaces */
+ul li a{
+  text-decoration: none;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: clamp(0.9rem, 0.6vw + 0.7rem, 1.1rem);
+  transition: color 0.3s ease-in-out;
+}
+
+.navbar ul li a:hover{
+  color: #ff7200;
+}
+
+.info{
+  width: 92%;
+  max-width: 1200px;
+  margin: clamp(1rem, 4vh, 3rem) auto 0;
+  color: #fff;
+  position: relative;
+
+  display: grid; /* was flex/column */
+  grid-template-columns: minmax(0, 1fr) min(38%, 420px);
+  gap: clamp(1rem, 4vw, 2.5rem);
+  align-items: start;          /* align tops of text and image */
+  margin-top: 200px;
+}
+
+.info h1,
+.info .txt{
+  grid-column: 1 / 2;
+}
+
+/* Título */
+.info h1{
+  font-family: 'Times New Roman', serif;
+  font-size: clamp(4rem, 4.5vw, 3.125rem); /* 32px–50px aprox */
+  letter-spacing: 2px;
+  padding-left: 0.75rem;      /* antes 20px */
+  width: 100%;
+}
+
+/* Párrafo */
+.info .txt{
+  width: 100%;
+  max-width: 70ch;            /* limita el ancho para mejor lectura */
+  padding: 0.5rem 0 1rem 0.75rem;  /* reemplaza px por rem */
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0.075em;
+  line-height: 1.7;           /* unitless/relativo para escalar mejor */
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
+.info img{
+  transform: translateY(-250px);
+  grid-column: 2 / 3;
+  justify-self: end;
+  width: 100%;
+  max-width: 420px;
+
+  /* square card */
+  aspect-ratio: 1 / 1;
+  object-fit: contain;                 /* use 'cover' if you want it to fill */
+  display: block;
+
+  /* frosted frame */
+  padding: clamp(10px, 1.8vw, 16px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.mainbody{
+  position: relative;
+  color: #fff;
+  background-color: #000;
+  text-align: justify;
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.75rem);
+  border-top: 1px solid rgba(255,255,255,0.08); /* subtle contrast line */
+}
+
+/* gradient overlay that fades from the image above into black */
+.mainbody::before{
+  content: "";
+  position: absolute;
+  top: calc(-1 * clamp(24px, 6vh, 80px));
+  left: 0;
+  right: 0;
+  height: clamp(24px, 6vh, 80px);
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.3) 40%,
+    rgba(0,0,0,0.65) 75%,
+    #000 100%
+  );
+  pointer-events: none;
+}
+
+/* Fix heading level (your HTML uses <h2>…</h2>) */
+.mainbody h2{
+  font-family: 'Times New Roman', serif;
+  font-size: clamp(2rem, 4.5vw, 3.125rem);
+  letter-spacing: 2px;
+  width: 100%;
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255);
+}
+
+.mainbody .maintxt img{
+  position: absolute;
+  top: clamp(7rem, 4vw, 2rem);
+  left: clamp(5rem, 4vw, 2rem);
+  width: min(25%, 420px);
+  height: auto;
+  margin: 0;
+  transform: none;
+}
+
+.maintxt{
+    font-family: Arial, Helvetica, sans-serif;
+    grid-column: 2/3;
+    max-width: 200ch;            /* limita el ancho para mejor lectura */
+    padding: 0.5rem 0 1rem 25.75rem;
+}
+
+.intro h2{
+    transform: translateY(-400px);
+    color:#fff;
+}
+
+.intro{
+  width: 100%;
+  max-width: 1800px;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: clamp(1rem, 4vh, 3rem) auto 0;
+  color: #fff;
+  position: relative;
+
+  display: grid; /* was flex/column */
+  grid-template-columns: minmax(0, 1fr) min(38%, 420px);
+  gap: clamp(1rem, 4vw, 2.5rem);
+  align-items: start;          /* align tops of text and image */
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.des{
+    font-family: Arial, Helvetica, sans-serif;
+    grid-column: 2/3;
+    max-width: 200ch;            /* limita el ancho para mejor lectura */
+    padding: 0.5rem 0 1rem 25.75rem;
+}
+
+.mainbody .des img{
+  position: absolute;
+  top: clamp(56rem, 4vw, 2rem);
+  left: clamp(3rem, 4vw, 2rem);
+  width: min(30%, 420px);
+  height: auto;
+  margin: 0;
+  transform: none;
+}
+
+.mainbody .intro img{
+  position: absolute;
+  top: clamp(5.65rem, 4vw, 2rem);
+  left: clamp(51rem, 4vw, 2rem);
+  width: min(23%, 700px);
+  height: 350px;
+  margin: 0;
+  transform: translateY(-90px);
+
+  padding: clamp(10px, 1.8vw, 16px);
+  background: rgba(255, 255, 255, 0.473);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+
+
+}
+
+.mainbody .imgSch img{
+  position: absolute;
+  top: clamp(68rem, 4vw, 2rem);
+  left: clamp(3rem, 4vw, 2rem);
+  width: min(30%, 420px);
+  height: auto;
+  margin: 0;
+  transform: none;
+}
+
+.mainbody .imgCase img{
+  position: absolute;
+  top: clamp(86.5rem, 4vw, 2rem);
+  left: clamp(3rem, 4vw, 2rem);
+  width: min(30%, 420px);
+  height: auto;
+  margin: 0;
+  transform: none;
+}
+
+.foot{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #ff7200;
+}
+
+.foot ul{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10.5rem, 4vw, 3rem);
+}
+
+.foot ul li a:hover{
+  color: #000;
+}
+
+svg{
+    height: 30px;
+    transform: translateY(5px);
+}
+
+/* ---------- Media Queries ---------- */
+
+/* Tablets / pantallas medianas */
+@media (max-width: 768px){
+  .navbar{
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .menu{
+    width: 100%;
+  }
+
+  ul{
+    justify-content: center;
+    flex-wrap: wrap;          /* permite salto de línea limpio */
+    align-items: center;
+    gap: 0.75rem 1.75rem;     /* fila x columna */
+    width: 100%;
+  }
+
+  .logo{
+    padding-left: 0rem;
+  }
+
+  .info{
+    align-items: justify;
+    text-align: justify;       /* texto centrado en pantallas pequeñas */
+  }
+
+  .info h1,
+  .info .txt{
+    padding-left: 0;          /* eliminamos la sangría en móvil */
+    max-width: 90%;
+    margin-inline: auto;
+  }
+
+  .info img{
+    transform: translateY(-6rem);
+  }
+
+  .mainbody{
+    padding: clamp(0.75rem, 2.5vw, 1.25rem) clamp(1rem, 6vw, 1.75rem);
+    padding-left: 52px;
+    box-shadow: 0 -18px 36px rgba(0,0,0,0.35) inset;
+    position: relative;
+  }
+
+  .mainbody::before{
+    height: clamp(32px, 10vh, 120px);
+    top: calc(-1 * clamp(32px, 10vh, 120px));
+  }
+
+  .mainbody h2{
+    font-size: clamp(1.6rem, 5.5vw, 2.2rem);
+  }
+
+  .mainbody .maintxt{
+    padding-left: 5px;
+    padding-top: 0px;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 1.9vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+  }
+
+  .mainbody .intro{
+    padding-left:0px;
+    padding-top: 0px;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 1.9vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mainbody .des{
+    padding-left: 5px;
+    padding-top: 0px;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 1.9vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+  .mainbody .maintxt img{
+    position: relative;
+    transform: translateY(-130px);
+    color: none;
+    width: 70%;
+    padding-right: 50px;
+  }
+
+.mainbody .intro img{
+  grid-row: 2;               /* 👈 below */
+  position: static;          /* stop offsets */
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(40%, 480px);
+  height: 100%;
+  margin-top: 1rem;
+  margin-left: 8rem;
+}
+
+.mainbody .des img{
+  grid-row: 2;               /* 👈 below */
+  position: static;          /* stop offsets */
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(30%, 480px);
+  height: 120%;
+  margin-top: 1rem;
+}
+
+.mainbody .imgSch img{
+  grid-row: 2;  
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(30%, 480px);
+  margin-top: -20rem;
+  margin-left: 12rem;
+}
+
+.mainbody .imgCase img{
+  grid-row: 2;  
+  position: static;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(30%, 480px);
+  margin-top: -20rem;
+  margin-left: 23.5rem;    
+}
+
+.foot ul{
+  gap: clamp(2.5rem, 4vw, 3rem);
+}
+
+}
+
+/* Móviles */
+/* ---------- Mobile / phones (max-width: 480px) ---------- */
+@media (max-width: 480px){
+  /* Navbar */
+  .navbar{
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .menu{ width: 100%; }
+
+  ul{
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    width: 100%;
+  }
+
+  .logo{
+    padding-left: 0;
+  }
+
+  /* Hero/info */
+  .info{
+    align-items: stretch;
+    text-align: justify;
+  }
+
+  .info h1,
+  .info .txt{
+    padding-left: 0;
+    max-width: 92%;
+    margin-inline: auto;
+  }
+
+  /* Slightly smaller lift than tablet */
+  .info img{
+    transform: translateY(-3rem);
+  }
+
+  /* Black section */
+  .mainbody{
+    padding: clamp(0.5rem, 3vw, 1rem) clamp(0.75rem, 5vw, 1.25rem);
+    box-shadow: 0 -12px 24px rgba(0,0,0,0.35) inset;
+    position: relative;
+  }
+
+  .mainbody::before{
+    height: clamp(24px, 12vh, 100px);
+    top: calc(-1 * clamp(24px, 12vh, 100px));
+  }
+
+  .mainbody h2{
+    font-size: clamp(1.3rem, 6.5vw, 1.8rem);
+  }
+
+  .mainbody .maintxt{
+    padding-left: 4px;
+    padding-top: 0;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+  }
+
+  /* Single-column blocks */
+  .mainbody .intro{
+    padding-left: 0;
+    padding-top: 0;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+    gap: clamp(0.5rem, 2vw, 1rem);
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mainbody .des{
+    padding-left: 4px;
+    padding-top: 0;
+    line-height: 1.7;
+    font-size: clamp(0.95rem, 2.8vw, 1.05rem);
+    margin-inline: auto;
+    position: relative;
+    gap: clamp(0.5rem, 2vw, 1rem);
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  /* Images inside paragraphs (if any) */
+  .mainbody .maintxt img{
+    position: relative;
+    transform: translateY(-70px);
+    width: 85%;
+    padding-right: 0;
+    height: auto;
+    margin-inline: auto;
+    display: block;
+  }
+
+  /* Intro image: below text, centered */
+  .mainbody .intro img{
+    grid-row: 2;
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: min(80%, 300px);
+    height: auto;
+    margin: 0.75rem auto 0;
+  }
+
+  /* Des image: below text, centered */
+  .mainbody .des img{
+    grid-row: 2;
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: min(78%, 300px);
+    height: auto;
+    margin: 0.75rem auto 0;
+  }
+
+  /* Extra image blocks: stack & center, no negative offsets */
+  .mainbody .imgSch img,
+  .mainbody .imgCase img{
+    grid-row: 2;
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: min(80%, 300px);
+    height: auto;
+    margin: 0.75rem auto 0;
+  }
+
+  /* Footer spacing tighter on phones */
+  .foot ul{
+    gap: clamp(1rem, 4vw, 2rem);
+  }
+}

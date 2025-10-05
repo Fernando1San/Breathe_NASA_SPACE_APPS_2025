@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Breathe</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="BREATHE.jpg" type="image">
+</head>
+<body>
+    <div class="main"  id="homepart">
+        <div class="navbar">
+            <div class="icon">
+                <h2 class="logo">Breathe</h2>
+            </div>
+
+            <div class="menu">
+                <ul>
+                    <li><a href="#homepart">HOME</a></li>
+                    <li><a href="#aboutpart">ABOUT</a></li>
+                    <li><a href="#servicepart">SERVICE</a></li>
+                    <li><a href="#designpart">DESIGN</a></li>
+                    <li><a href="#contactpart">CONTACT</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="info">
+                <h1>Air<br> Quality</h1>
+                <p class="txt"> 
+                    Air quality is the invisible infrastructure of health and opportunity. 
+                    Clean air means fewer hospital visits, sharper minds, and longer lives—especially 
+                    for kids and elders. Measure it, publish it, fix it. The future breathes with us.
+                </p>
+                <img src="BreatheLogo.png">
+
+        </div>
+
+    </div>
+
+    <div class="mainbody">
+        <h2 id="aboutpart">About the project</h2>
+        <p class="maintxt"><br>
+                Our challenge is simple: help as many people as possible make safer,
+                 healthier choices every day. This project has two parts that work together:
+                 a mobile app that personalizes air-quality guidance, and a companion device 
+                 (working name) that measures local air when there’s no internet or cell signal.
+            <br><br>
+
+                The mobile app turns satellite observations from NASA into practical, real-time 
+                advice. It shows current air quality, short-term trends, and clear recommendations 
+                tailored to each user. With your consent, you can add details like age, respiratory 
+                or heart conditions, pregnancy, outdoor work hours, or training goals. The app then 
+                adjusts alerts to your profile—sending notifications such as “Great air today—perfect 
+                for a run,” or “Unhealthy for sensitive groups—limit outdoor time and consider a mask.” 
+                You choose alert times and thresholds; your data is kept private and used only to improve 
+                your guidance.
+            <br><br>
+
+                For communities without reliable signal or Wi-Fi, we are building an offline air-quality 
+                monitor (name TBD). It uses onboard sensors to read key pollutants and displays an 
+                easy-to-understand status on the device itself, so anyone nearby can see current 
+                conditions. When a phone is in range, it can share data locally (e.g., via Bluetooth) 
+                so people can still get personalized tips—no mobile data required.
+            <br><br>
+            
+            <img src="earth.jpg">
+        </p>
+        <h2 id="servicepart">Services from the app</h2>
+        <p class="intro"><br>
+            The Breathe mobile application serves as an intelligent interface for the Python-based server, enabling users to receive filtered and personalized air quality information according to their location and individual profile.
+            When the user launches the app, they are asked to provide basic personal details  and to grant access to their current GPS location.
+            This information is securely transmitted to the server, which then identifies the user’s position and defines a surrounding area of approximately 50 kilometers for data analysis.
+            Within this area, the server aggregates and processes environmental information obtained from:<br><br>
+            •	NASA TEMPO satellite data<br><br>
+            •	Local IoT measurements from nearby Breathe Nodes<br><br>
+            •	Meteorological data
+            <img src="APP.jpg">
+        </p><br><br>
+
+        <h2  id="designpart">Design</h2>
+        <p class="des"><br>
+            The Air Quality Monitoring PCB is a custom-designed electronic board built around the
+             ESP32-WROOM-32UE microcontroller. It serves as a compact and efficient hardware platform
+              for collecting and transmitting environmental data over Wi-Fi. The PCB integrates multiple
+               sensor interfaces and power management components to ensure stable operation and accurate
+                measurements. The design prioritizes:<br><br>
+            - Ease of assembly: plug-and-play sensor sockets. <br>- Signal integrity: proper routing and isolation
+             for analog readings. <br>- Wireless communication: through the integrated Wi-Fi module of the ESP32.
+              <br>- Compact form factor: suitable for enclosure integration and prototyping.<br><br>
+
+            ESP32-WROOM-32UE: Main processing and communication unit, responsible for reading sensor data
+             and transmitting it wirelessly.<br><br>
+            Sensor sockets:<br>
+            - PMS5003 – for particulate matter measurement (PM1.0, PM2.5, PM10). MQ131 – for ozone (O₃)
+            detection. <br>- MQ-4 – for methane (CH₄) and combustible gas sensing. <br>- Voltage regulation stage: 
+            Ensures stable 5V and 3.3V power supply to sensors and microcontroller. <br>- Programming and debugging 
+            header: Allows firmware upload and serial monitoring. <br>- Status indicators: LEDs for power and Wi-Fi 
+            connection status.<br><br>
+            The PCB is powered via a standard 9V ot 12V input, with onboard regulation to 3.3V for the ESP32 
+            and 5V for the Sensors. All communication with external systems occurs through Wi-Fi, using the 
+            ESP32’s internal antenna and u.FL connector for external antennas when longer range is required.<br><br>
+            When the design of this project was conceived, it was taken into consideration that the best
+            option would be to make it visually friendly for any type of person, from an industrial worker
+            to a five-year-old child. Since it’s not designed just to use it in a factory, but rather to
+            adapt to any environment, such as a home or a park.<br><br>
+            The design of the casing and the assembly of the project were carried out in SolidWorks, a CAD
+            design software that offers multiple functions, including 3D part modeling. It was considered 
+            as one of the most complete and suitable softwares for this application and it is already used by
+            a lot of universities who teach 3d modeling to their students.<br><br>
+            On the other hand, the PCB design was done with KiCad, which was chosen because it is a free 
+            open-source software that is made for the design of circuit schematics and printed circuit boards 
+            in an intuitive and visually appealing way.<br>333
+            <img src="PCB.jpg">
+            
+        </p><br>
+        <p class="imgSch">
+            <img src="Schematic.png">
+        </p>
+        <p class="imgCase">
+            <img src="case.jpg">
+        </p>
+    </div>
+    <div class="foot">
+        <div class="footmenu" id="contactpart">
+                <ul>
+                    <li><a href="breatheApp.apk">DOWNLOAD APP
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
+                        </svg>
+                    </a></li>
+                    <li><a href="buy.html">BUY
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                        </svg>
+                    </a></li>
+                    <li><a href="https://github.com/Fernando1San/Breathe_NASA_SPACE_APPS_2025">GITHUB
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                        </svg>
+
+                    </a></li>
+                </ul>
+        </div>
+    </div>
+
+</body>
+
+</html>
